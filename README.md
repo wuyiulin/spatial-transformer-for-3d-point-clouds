@@ -1,124 +1,67 @@
 # Spatial Transformer for 3D Point Clouds
 
-[[Project]](http://pwang.pw/spn.html) [[Paper]](https://arxiv.org/abs/1906.10887)   
+## Introdution 
+
+This repository is a rewrite spatial transformer from [Spatial Transformer for 3D Point Clouds](https://github.com/samaonline/spatial-transformer-for-3d-point-clouds),
+
+because that repo build by  Tensorflow, and frame mixed another task and spatial transformer,
+
+i decided refer to that repo write pure spatial transformer - [Spatial_transformer.py].
+
+Contribution of this repo is rewrite to pytoech frame and package to class,
+very friendly to use.
+
+
+
+因為參考的 repo 把 Spatial Transformer 跟下游任務寫在一起，
+
+而且是用 Tesorflow 建的，我這邊不方便使用。
+
+所以決定將含有 Spatial Transformer 的部分拔出來重寫成 pytorch 版本，
+並且包成 class 出來用。
+
+
+
+**簡單來說這包是 [Spatial Transformer for 3D Point Clouds](https://github.com/samaonline/spatial-transformer-for-3d-point-clouds) 的 Spatial Transformer 部分移植 pytorch 版。**
+
 
 ## Quick Start
-For quick addition of the spatial transformer to your network, refer to [network architecture file](point_based/part_seg/part_seg_model_deform.py#L53) of how transformer can be added, and [offset_deform](point_based/utils/tf_util.py#L120-L160) for the transformer implementation.
 
-## Overview
-This is the author's re-implementation of  
-"[Spatial Transformer for 3D Point Clouds](https://arxiv.org/abs/1906.10887)", by   
-[Jiayun Wang](http://pwang.pw/),&nbsp; [Rudrasis Chakraborty](https://rudra1988.github.io/),&nbsp; [Stella X. Yu](https://www1.icsi.berkeley.edu/~stellayu/)&nbsp; (UC Berkeley / ICSI)&nbsp; 
-in IEEE Transactions on Pattern Analysis and Machine Intelligence.
 
-<img src='./assets/intro.png' width=800>
+Step 1
 
-Further information please contact [Jiayun Wang](mailto:peterwg@berkeley.edu).
+In your model file import [Spatial_transformer.py]
 
-## Update notifications
-* 03/09/2019: Uploaded point-based methods for ShapeNet part segmentation.
-* 10/07/2019: Uploaded sampling-based methods for ShapeNet part segmentation.
-
-## Requirements
-* [Tensorflow](https://www.tensorflow.org/get_started/os_setup) (for the point-based method, version >= 1.13.1)
-* [CAFFE](https://github.com/samaonline/caffe-deform) (for the sampling-based method, please use our version as we rewrite some source codes.)
-* [NCCL](https://github.com/NVIDIA/nccl) (for multi-gpu in the sampling-based method)
-
-## Point-based Methods
-
-Please navigate to the specific folder first.
-
-```bash
-cd point_based
+```python
+from Spatial_transformer import offset_deform as OD
 ```
 
-### Install Tensorflow and h5py
+Step 2 
 
-Install <a href="https://www.tensorflow.org/get_started/os_setup" target="_blank">TensorFlow</a>. You may also need to install h5py.
+In your model class create a object **(optional)**.
 
-To install h5py for Python:
-```bash
-sudo apt-get install libhdf5-dev
-pip install h5py
+```python
+self.OD = OD()
 ```
 
-### Data Preparation
+Step 3
 
-Download the data for part segmentation.
+In your model file fordward part use.
 
-```
-sh +x download_data.sh
-```
-
-### Running Examples
-
-#### Train
-
-Train the deformable spatial transformer. Specify number of gpus used with '--num_gpu'. Specify number of graphs and number of feature dimensions by '--graphnum' and '--featnum', respectively. 
-
-```
-cd part_seg
-python train_deform.py --graphnum 2 --featnum 64
+```python
+output, net_max, net_mean = self.OD(input_image = x)
+# x is point cloud data, shape like [B, C, P].
 ```
 
-Model parameters are saved every 10 epochs in "train_results/trained_models/".
+## Murmur
 
-#### Evaluation
+這篇我是根據原著的 Quick Start 改的，
 
-To evaluate the model saved after epoch n, 
+基本上就是改寫這份檔案 [network architecture file](https://github.com/samaonline/spatial-transformer-for-3d-point-clouds/blob/master/point_based/part_seg/part_seg_model_deform.py#L53) 第 15 行 到 53 行的功能。 
 
-```
-python test.py --model_path train_results/trained_models/epoch_n.ckpt  --graphnum 2 --featnum 64
-```
 
-## Sampling-based Methods
+## Contact
 
-### Install Caffe
+Further information please contact me.
 
-Please use [our version of CAFFE](https://github.com/samaonline/caffe-deform), as we provide the implementation of spatial transformers for bilateralNN, as described in the paper. A guide to CAFFE installation can be found [here](https://caffe.berkeleyvision.org/installation.html).
-
-### Data Preparation
-
-Please navigate to the specific folder first.
-
-```bash
-cd sampling-based
-```
-
-See instructions in [data/README.md](https://github.com/samaonline/spatial-transformer-for-3d-point-clouds/blob/master/sampling-based/data/README.md).
-
-### Running Examples
-
-    * ShapeNet Part segmentation
-        * train and evaluate
-            ```bash
-            cd sampling-based/exp/shapenet3d
-            ./train_test.sh
-        * test trained model
-            ```bash
-            cd sampling-based/exp/shapenet3d
-            ./test_only.sh
-            ```
-            Predictions are under `pred/`, with evaluation results in `test.log`.
-
-## Benchmarks and Model Zoo
-
-Please refer to Section 4 of the [paper](https://arxiv.org/abs/1906.10887).
-
-## Additional Notes
-The code is implemented based on [Dynamic Graph CNN](https://github.com/WangYueFt/dgcnn), [BilateralNN](https://github.com/MPI-IS/bilateralNN) and [SplatNet](https://github.com/NVlabs/splatnet).
-
-## License and Citation
-The use of this software is RESTRICTED to **non-commercial research and educational purposes**.
-```
-@article{spn3dpointclouds,
-  author    = {Jiayun Wang and
-               Rudrasis Chakraborty and
-               Stella X. Yu},
-  title     = {Spatial Transformer for 3D Points},
-  journal   = {CoRR},
-  volume    = {abs/1906.10887},
-  year      = {2019},
-  url       = {http://arxiv.org/abs/1906.10887},
-}
-```
+wuyiulin@gmail.com
